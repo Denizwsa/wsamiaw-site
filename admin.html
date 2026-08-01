@@ -7,11 +7,11 @@
   <link rel="stylesheet" href="site.css"/>
   <script src="site-config.js"></script>
 </head>
-<body>
-  <div class="wrap admin-wrap">
-    <section class="panel" id="gate">
+<body class="admin-body">
+  <div class="wrap admin-gate-wrap" id="gate">
+    <section class="panel">
       <h2>Admin</h2>
-      <p class="note">Enter the admin secret key (not your user password).</p>
+      <p class="note">Enter the admin secret key.</p>
       <form id="form-admin-login" class="form active" style="max-width:420px">
         <label>Admin key
           <input type="password" name="key" autocomplete="off" required minlength="16"/>
@@ -20,65 +20,44 @@
       </form>
       <div id="gate-msg" class="msg" hidden></div>
     </section>
+  </div>
 
-    <div id="dashboard" hidden>
-      <nav class="nav" style="margin-bottom:1.25rem">
-        <span class="nav-brand">Wsamiaw Admin</span>
-        <div class="nav-links">
-          <button type="button" class="btn btn-ghost" id="btn-refresh">Refresh</button>
-          <button type="button" class="btn btn-ghost" id="btn-admin-logout">Lock</button>
-        </div>
+  <div class="admin-shell" id="dashboard" hidden>
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-brand">Wsamiaw Admin</div>
+      <nav class="admin-nav">
+        <button type="button" class="admin-nav-item active" data-tab="overview">Overview</button>
+        <button type="button" class="admin-nav-item" data-tab="users">Users</button>
+        <button type="button" class="admin-nav-item" data-tab="licenses">Licenses</button>
+        <button type="button" class="admin-nav-item" data-tab="tools">Tools</button>
+        <button type="button" class="admin-nav-item" data-tab="events">Auth log</button>
       </nav>
+      <div class="admin-sidebar-foot">
+        <button type="button" class="btn btn-ghost" id="btn-refresh" style="width:100%">Refresh</button>
+        <button type="button" class="btn btn-ghost" id="btn-admin-logout" style="width:100%;margin-top:0.5rem">Lock</button>
+      </div>
+    </aside>
 
-      <section class="panel">
+    <main class="admin-main">
+      <section class="panel admin-tab-panel active" data-panel="overview">
         <h2>Overview</h2>
         <div class="admin-stats" id="stats"></div>
       </section>
 
-      <section class="panel" style="margin-top:1rem">
-        <h2>Create license</h2>
-        <form id="form-create-license" class="form active" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-          <label>User email
-            <input type="email" name="email" required placeholder="buyer@email.com"/>
-          </label>
-          <label>Plan
-            <input type="text" name="plan" value="lifetime"/>
-          </label>
-          <label>Custom key (optional)
-            <input type="text" name="key" placeholder="auto-generated"/>
-          </label>
-          <label>Expires (ms timestamp, optional)
-            <input type="text" name="expires_at" placeholder="empty = never"/>
-          </label>
-          <button type="submit" class="btn btn-secondary" style="grid-column:1/-1">Create license</button>
-        </form>
-        <div id="create-msg"></div>
-      </section>
-
-      <section class="panel" style="margin-top:1rem">
-        <h2>Verify user (no email)</h2>
-        <form id="form-verify-user" class="form active" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end">
-          <label style="flex:1;min-width:200px">Email
-            <input type="email" name="email" required/>
-          </label>
-          <button type="submit" class="btn btn-secondary">Mark verified</button>
-        </form>
-        <div id="verify-user-msg"></div>
-      </section>
-
-      <section class="panel" style="margin-top:1rem">
+      <section class="panel admin-tab-panel" data-panel="users" hidden>
         <h2>Users</h2>
+        <p class="note">Delete removes the account and all licenses for that user.</p>
         <div class="data-table-wrap">
           <table class="data-table" id="users-table">
             <thead>
-              <tr><th>ID</th><th>Email</th><th>Verified</th><th>2FA</th><th>Created</th></tr>
+              <tr><th>ID</th><th>Email</th><th>Verified</th><th>2FA</th><th>Created</th><th></th></tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </section>
 
-      <section class="panel" style="margin-top:1rem">
+      <section class="panel admin-tab-panel" data-panel="licenses" hidden>
         <h2>Licenses</h2>
         <div class="data-table-wrap">
           <table class="data-table" id="licenses-table">
@@ -91,13 +70,57 @@
           </table>
         </div>
       </section>
-    </div>
+
+      <section class="panel admin-tab-panel" data-panel="tools" hidden>
+        <h2>Create license</h2>
+        <form id="form-create-license" class="form active admin-form-grid">
+          <label>User email
+            <input type="email" name="email" required placeholder="buyer@email.com"/>
+          </label>
+          <label>Plan
+            <input type="text" name="plan" value="lifetime"/>
+          </label>
+          <label>Custom key (optional)
+            <input type="text" name="key" placeholder="auto-generated"/>
+          </label>
+          <label>Expires (ms, optional)
+            <input type="text" name="expires_at" placeholder="empty = never"/>
+          </label>
+          <button type="submit" class="btn btn-secondary admin-form-span">Create license</button>
+        </form>
+        <div id="create-msg"></div>
+
+        <h2 style="margin-top:1.5rem">Verify user (no email)</h2>
+        <form id="form-verify-user" class="form active admin-inline-form">
+          <label>Email
+            <input type="email" name="email" required/>
+          </label>
+          <button type="submit" class="btn btn-secondary">Mark verified</button>
+        </form>
+        <div id="verify-user-msg"></div>
+      </section>
+
+      <section class="panel admin-tab-panel" data-panel="events" hidden>
+        <h2>Auth log</h2>
+        <p class="note">Register, login, logout, 2FA, admin actions. New events appear after deploy.</p>
+        <div class="data-table-wrap">
+          <table class="data-table" id="events-table">
+            <thead>
+              <tr><th>Time</th><th>Event</th><th>Email</th><th>User</th><th>IP</th><th>Detail</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   </div>
+
   <script src="api.js"></script>
   <script>
     const gate = document.getElementById("gate");
     const dashboard = document.getElementById("dashboard");
     const gateMsg = document.getElementById("gate-msg");
+    let activeTab = "overview";
 
     function showMsg(el, text, ok) {
       el.hidden = false;
@@ -119,47 +142,92 @@
       return h.length > 12 ? h.slice(0, 8) + "…" : h;
     }
 
-    async function loadAll() {
+    function esc(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function setTab(name) {
+      activeTab = name;
+      document.querySelectorAll(".admin-nav-item").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tab === name);
+      });
+      document.querySelectorAll(".admin-tab-panel").forEach((p) => {
+        const on = p.dataset.panel === name;
+        p.hidden = !on;
+        p.classList.toggle("active", on);
+      });
+    }
+
+    document.querySelectorAll(".admin-nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => setTab(btn.dataset.tab));
+    });
+
+    async function loadOverview() {
       const ov = await adminGet("/admin/overview");
       if (!ov.ok) throw new Error("overview");
-      const stats = document.getElementById("stats");
-      stats.innerHTML = [
+      document.getElementById("stats").innerHTML = [
         ["Users", ov.data.users],
         ["Verified", ov.data.users_verified],
         ["Licenses", ov.data.licenses],
         ["Active licenses", ov.data.licenses_active],
+        ["Log entries", ov.data.events ?? 0],
       ]
         .map(
           ([k, v]) =>
             `<div class="admin-stat"><div class="note">${k}</div><div style="font-size:1.4rem;font-weight:700">${v}</div></div>`
         )
         .join("");
+    }
 
+    async function loadUsers() {
       const u = await adminGet("/admin/users");
       const utb = document.querySelector("#users-table tbody");
       utb.innerHTML = (u.data.users || [])
         .map(
           (row) =>
-            `<tr><td>${row.id}</td><td>${row.email}</td><td>${row.email_verified ? "yes" : "no"}</td><td>${row.totp_enabled ? "yes" : "no"}</td><td>${fmtDate(row.created_at)}</td></tr>`
+            `<tr>
+              <td>${row.id}</td>
+              <td>${esc(row.email)}</td>
+              <td>${row.email_verified ? "yes" : "no"}</td>
+              <td>${row.totp_enabled ? "yes" : "no"}</td>
+              <td>${fmtDate(row.created_at)}</td>
+              <td><button type="button" class="btn btn-ghost btn-sm btn-danger" data-del-user="${esc(row.email)}">Delete</button></td>
+            </tr>`
         )
         .join("");
+      utb.querySelectorAll("[data-del-user]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const email = btn.getAttribute("data-del-user");
+          if (!confirm("Delete user " + email + " and all their licenses?")) return;
+          const r = await adminPost("/admin/users/delete", { email });
+          if (r.ok) loadAll();
+          else alert(r.data.error || "Failed");
+        });
+      });
+    }
 
+    async function loadLicenses() {
       const l = await adminGet("/admin/licenses");
       const ltb = document.querySelector("#licenses-table tbody");
       ltb.innerHTML = (l.data.licenses || [])
         .map((row) => {
+          const keyEsc = esc(row.key);
           const actions = [];
           if (row.revoked) {
-            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="unrevoke" data-key="${row.key}">Unrevoke</button>`);
+            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="unrevoke" data-key="${keyEsc}">Unrevoke</button>`);
           } else {
-            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="revoke" data-key="${row.key}">Revoke</button>`);
+            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="revoke" data-key="${keyEsc}">Revoke</button>`);
           }
-          actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="clear_hwid" data-key="${row.key}">Clear HWID</button>`);
+          actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="clear_hwid" data-key="${keyEsc}">Clear HWID</button>`);
+          actions.push(`<button type="button" class="btn btn-ghost btn-sm btn-danger" data-act="delete" data-key="${keyEsc}">Delete key</button>`);
           return `<tr>
-            <td class="license-key" style="font-size:0.75rem">${row.key}</td>
-            <td>${row.email || row.user_id}</td>
-            <td>${row.plan}</td>
-            <td>${shortHwid(row.hwid)}</td>
+            <td class="license-key" style="font-size:0.75rem">${keyEsc}</td>
+            <td>${esc(row.email || row.user_id)}</td>
+            <td>${esc(row.plan)}</td>
+            <td title="${esc(row.hwid || "")}">${shortHwid(row.hwid)}</td>
             <td>${row.active && !row.revoked ? "yes" : "no"}</td>
             <td style="white-space:nowrap">${actions.join(" ")}</td>
           </tr>`;
@@ -168,21 +236,54 @@
 
       ltb.querySelectorAll("button[data-act]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          const key = btn.dataset.key;
+          const key = btn.getAttribute("data-key");
           const act = btn.dataset.act;
+          if (act === "delete") {
+            if (!confirm("Delete license key " + key + "?")) return;
+            const r = await adminPost("/admin/licenses/delete", { key });
+            if (r.ok) loadAll();
+            else alert(r.data.error || "Failed");
+            return;
+          }
           let body = { key };
           if (act === "revoke") body.revoked = true;
           if (act === "unrevoke") body.revoked = false;
-          if (act === "clear_hwid") body.clear_hwid = true;
+          if (act === "clear_hwid") {
+            if (!confirm("Clear HWID for " + key + "?")) return;
+            body.clear_hwid = true;
+          }
           const r = await adminPost("/admin/licenses/update", body);
           if (r.ok) loadAll();
         });
       });
     }
 
+    async function loadEvents() {
+      const e = await adminGet("/admin/events?limit=300");
+      const etb = document.querySelector("#events-table tbody");
+      etb.innerHTML = (e.data.events || [])
+        .map(
+          (row) =>
+            `<tr>
+              <td>${fmtDate(row.created_at)}</td>
+              <td>${esc(row.event)}</td>
+              <td>${esc(row.email)}</td>
+              <td>${row.user_id ?? "—"}</td>
+              <td>${esc(row.ip)}</td>
+              <td>${esc(row.detail)}</td>
+            </tr>`
+        )
+        .join("");
+    }
+
+    async function loadAll() {
+      await Promise.all([loadOverview(), loadUsers(), loadLicenses(), loadEvents()]);
+    }
+
     function showDashboard() {
       gate.hidden = true;
       dashboard.hidden = false;
+      setTab(activeTab);
       loadAll().catch(() => {
         clearAdminKey();
         gate.hidden = false;
@@ -193,8 +294,7 @@
 
     document.getElementById("form-admin-login").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const key = new FormData(e.target).get("key");
-      saveAdminKey(String(key || "").trim());
+      saveAdminKey(String(new FormData(e.target).get("key") || "").trim());
       const ping = await adminGet("/admin/ping");
       if (!ping.ok) {
         clearAdminKey();
@@ -218,35 +318,30 @@
       const email = new FormData(e.target).get("email");
       const msg = document.getElementById("verify-user-msg");
       const r = await adminPost("/admin/users/verify", { email });
-      if (!r.ok) {
-        showMsg(msg, r.data.error || "Failed", false);
-        return;
+      if (!r.ok) showMsg(msg, r.data.error || "Failed", false);
+      else {
+        showMsg(msg, "Verified: " + r.data.email, true);
+        loadAll();
       }
-      showMsg(msg, "Verified: " + r.data.email, true);
-      loadAll();
     });
 
     document.getElementById("form-create-license").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const body = {
-        email: fd.get("email"),
-        plan: fd.get("plan"),
-      };
+      const body = { email: fd.get("email"), plan: fd.get("plan") };
       const customKey = String(fd.get("key") || "").trim();
       const exp = String(fd.get("expires_at") || "").trim();
       if (customKey) body.key = customKey;
       if (exp) body.expires_at = exp;
       const msg = document.getElementById("create-msg");
       const r = await adminPost("/admin/licenses/create", body);
-      if (!r.ok) {
-        showMsg(msg, r.data.error || "Failed", false);
-        return;
+      if (!r.ok) showMsg(msg, r.data.error || "Failed", false);
+      else {
+        showMsg(msg, "Created: " + r.data.key, true);
+        e.target.reset();
+        e.target.querySelector("[name=plan]").value = "lifetime";
+        loadAll();
       }
-      showMsg(msg, "Created: " + r.data.key, true);
-      e.target.reset();
-      e.target.querySelector("[name=plan]").value = "lifetime";
-      loadAll();
     });
 
     if (getAdminKey()) {

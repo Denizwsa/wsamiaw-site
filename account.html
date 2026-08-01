@@ -413,7 +413,9 @@
       showMsg(formMsg, msg, true);
     });
 
-    document.getElementById("btn-logout").addEventListener("click", () => {
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+      const session = getSession();
+      if (session) await apiPost("/logout", {}, session.token);
       clearSession();
       showGuest();
     });
