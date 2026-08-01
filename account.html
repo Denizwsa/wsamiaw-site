@@ -12,7 +12,6 @@
   <script src="i18n.js" defer></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=wsamiawTurnstileOnLoad" async defer></script>
   <script src="turnstile.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
 </head>
 <body data-page-title-key="page_title_account">
   <div class="wrap">
@@ -97,15 +96,17 @@
         <div id="panel-2fa" style="margin-bottom:1.25rem;padding-top:0.5rem;border-top:1px solid var(--border, #333)">
           <h3 style="font-size:1rem;margin-bottom:0.5rem" data-i18n="twofa_heading"></h3>
           <p id="2fa-status" class="note"></p>
+          <button type="button" id="btn-2fa-start" class="btn btn-secondary" hidden data-i18n="btn_setup_2fa">Set up 2FA</button>
           <div id="2fa-setup" hidden>
-            <p class="note" data-i18n="twofa_setup_note"></p>
-            <canvas id="2fa-qr" class="twofa-qr" width="200" height="200" aria-label="2FA QR code"></canvas>
-            <p class="note" data-i18n="twofa_manual_key">Or enter this key manually:</p>
+            <p class="note" id="2fa-setup-intro">Scan the QR code with Google Authenticator, Authy, etc.</p>
+            <img id="2fa-qr-img" class="twofa-qr" width="200" height="200" alt="2FA QR code" hidden/>
+            <canvas id="2fa-qr" class="twofa-qr" width="200" height="200" hidden aria-hidden="true"></canvas>
+            <p class="note">Or enter this key manually:</p>
             <p class="license-key" id="2fa-secret"></p>
-            <p class="note"><a id="2fa-otpauth" href="#" target="_blank" rel="noopener" data-i18n="twofa_otpauth"></a></p>
+            <p class="note"><a id="2fa-otpauth" href="#" target="_blank" rel="noopener" data-i18n="twofa_otpauth">Open in authenticator</a></p>
             <form id="form-2fa-enable" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
               <label><span data-i18n="label_first_code">First code</span>
-                <input type="text" name="code" inputmode="numeric" maxlength="8"/>
+                <input type="text" name="code" inputmode="numeric" maxlength="8" autocomplete="one-time-code"/>
               </label>
               <button type="submit" class="btn btn-secondary" data-i18n="btn_enable_2fa">Enable 2FA</button>
             </form>
@@ -116,7 +117,6 @@
             </label>
             <button type="submit" class="btn btn-ghost" data-i18n="btn_disable_2fa">Disable 2FA</button>
           </form>
-          <button type="button" id="btn-2fa-start" class="btn btn-secondary" hidden data-i18n="btn_setup_2fa">Set up 2FA</button>
           <div id="2fa-msg"></div>
         </div>
 
@@ -300,14 +300,46 @@
 
       if (data.totp_enabled) {
         status.textContent = t("twofa_on");
-        setup.hidden = true;
+        reset2faSetup();
         disableForm.hidden = false;
         startBtn.hidden = true;
       } else {
         status.textContent = t("twofa_off");
         disableForm.hidden = true;
         startBtn.hidden = false;
-        setup.hidden = true;
+        reset2faSetup();
+      }
+    }
+
+    function reset2faSetup() {
+      const setup = document.getElementById("2fa-setup");
+      setup.hidden = true;
+      document.getElementById("2fa-secret").textContent = "";
+      const img = document.getElementById("2fa-qr-img");
+      img.hidden = true;
+      img.removeAttribute("src");
+      const canvas = document.getElementById("2fa-qr");
+      canvas.hidden = true;
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function render2faQr(otpauthUrl) {
+      if (!otpauthUrl) return;
+      const img = document.getElementById("2fa-qr-img");
+      const canvas = document.getElementById("2fa-qr");
+      img.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=" +
+        encodeURIComponent(otpauthUrl);
+      img.hidden = false;
+      canvas.hidden = true;
+      if (typeof QRCode !== "undefined") {
+        QRCode.toCanvas(canvas, otpauthUrl, { width: 200, margin: 2 }, (err) => {
+          if (!err) {
+            img.hidden = true;
+            canvas.hidden = false;
+          }
+        });
       }
     }
 
@@ -508,30 +540,21 @@
     });
 
     function render2faQr(otpauthUrl) {
+      if (!otpauthUrl) return;
+      const img = document.getElementById("2fa-qr-img");
       const canvas = document.getElementById("2fa-qr");
-      if (!canvas || !otpauthUrl) return;
-      canvas.hidden = false;
-      const draw = () => {
-        if (typeof QRCode === "undefined") return;
-        QRCode.toCanvas(
-          canvas,
-          otpauthUrl,
-          {
-            width: 200,
-            margin: 2,
-            color: { dark: "#111111", light: "#ffffff" },
-          },
-          (err) => {
-            if (err) canvas.hidden = true;
+      img.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=" +
+        encodeURIComponent(otpauthUrl);
+      img.hidden = false;
+      canvas.hidden = true;
+      if (typeof QRCode !== "undefined") {
+        QRCode.toCanvas(canvas, otpauthUrl, { width: 200, margin: 2 }, (err) => {
+          if (!err) {
+            img.hidden = true;
+            canvas.hidden = false;
           }
-        );
-      };
-      if (typeof QRCode !== "undefined") draw();
-      else {
-        const s = document.createElement("script");
-        s.src = "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
-        s.onload = draw;
-        document.head.appendChild(s);
+        });
       }
     }
 
@@ -539,8 +562,12 @@
       const session = getSession();
       if (!session) return;
       const msgEl = document.getElementById("2fa-msg");
+      const startBtn = document.getElementById("btn-2fa-start");
+      startBtn.disabled = true;
+      showMsg(msgEl, "Loading…", true);
       const { ok, data } = await apiPost("/2fa/setup", {}, session.token);
-      if (!ok) {
+      startBtn.disabled = false;
+      if (!ok || !data.secret || !data.otpauth) {
         showMsg(msgEl, t("err_2fa_setup"), false);
         return;
       }
@@ -550,7 +577,7 @@
       link.textContent = t("open_authenticator");
       render2faQr(data.otpauth);
       document.getElementById("2fa-setup").hidden = false;
-      document.getElementById("btn-2fa-start").hidden = true;
+      startBtn.hidden = true;
       showMsg(msgEl, t("twofa_setup_ok"), true);
     });
 
