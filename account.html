@@ -214,7 +214,7 @@
         } else if (data.error === "token_expired") {
           stopRegisterPoll();
           showRegisterForm();
-          showMsg(formMsg, t("verify_email_expired"), false);
+          showMsg(formMsg, "Verification link expired. Register again or resend the email.", false);
         }
       };
 
