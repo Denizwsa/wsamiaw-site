@@ -1,23 +1,32 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="description" content="Wsamiaw Recode — Fabric client for Minecraft 26.2"/>
+  <meta name="description" content="" data-i18n="meta_description"/>
   <title>Wsamiaw Recode</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="site.css"/>
+  <script src="i18n.js" defer></script>
 </head>
-<body>
+<body data-page-title-key="page_title_home">
   <div class="wrap">
     <nav class="nav">
-      <a class="nav-brand" href="index.html">Wsamiaw</a>
+      <div class="nav-left">
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+        </select>
+        <a class="nav-brand" href="index.html">Wsamiaw</a>
+      </div>
       <div class="nav-links">
-        <a href="index.html">Ana sayfa</a>
-        <a href="account.html">Hesap</a>
-        <a href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener">İndir</a>
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="account.html" data-i18n="nav_account">Account</a>
+        <a href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener" data-i18n="nav_download">Download</a>
         <a href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
       </div>
     </nav>
@@ -25,64 +34,55 @@
     <header class="hero">
       <div class="logo" aria-hidden="true">W</div>
       <h1>Wsamiaw Recode</h1>
-      <p class="tagline">
-        Minecraft <strong>26.2</strong> için Fabric client — dropdown ClickGUI, scripting, combat &amp; movement.
-        ViaFabricPlus ile eski protokollü sunuculara da uyumlu.
-      </p>
+      <p class="tagline" data-i18n-html="hero_tagline"></p>
       <div class="badges">
         <span class="badge"><strong>MC</strong> 26.2</span>
         <span class="badge"><strong>Fabric</strong></span>
         <span class="badge"><strong>Java</strong> 25</span>
       </div>
       <div class="actions">
-        <a class="btn btn-primary" href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener">
-          İndir (GitHub Releases)
+        <a class="btn btn-primary" href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener" data-i18n="btn_download_github">
+          Download (GitHub Releases)
         </a>
-        <a class="btn btn-secondary" href="account.html">Hesap / Giriş</a>
+        <a class="btn btn-secondary" href="account.html" data-i18n="btn_account_login">Account / Sign in</a>
         <a class="btn btn-secondary" href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
-        <a class="btn btn-secondary" href="scripting.md">Scripting</a>
+        <a class="btn btn-secondary" href="scripting.md" data-i18n="btn_scripting">Scripting</a>
       </div>
     </header>
 
     <div class="grid grid-2">
       <section class="panel">
-        <h2>Kurulum</h2>
+        <h2 data-i18n="section_setup">Setup</h2>
         <ul>
-          <li>Fabric Loader 0.19.3+ ve Fabric API (26.2)</li>
-          <li>Java 25</li>
-          <li>JAR’ı <code>mods</code> klasörüne at</li>
-          <li>1.8 sunucular için ViaFabricPlus önerilir</li>
+          <li data-i18n="setup_1"></li>
+          <li data-i18n="setup_2"></li>
+          <li data-i18n-html="setup_3"></li>
+          <li data-i18n="setup_4"></li>
         </ul>
       </section>
       <section class="panel">
-        <h2>Öne çıkanlar</h2>
+        <h2 data-i18n="section_features">Highlights</h2>
         <ul>
-          <li>KillAura, SilentAura, Backtrack, Scaffold</li>
-          <li>HUD blur, ModelManager, Script Writer</li>
-          <li>Custom ana menü &amp; dropdown GUI</li>
+          <li data-i18n="feat_1"></li>
+          <li data-i18n="feat_2"></li>
+          <li data-i18n="feat_3"></li>
         </ul>
       </section>
     </div>
 
     <section class="panel">
-      <h2>Hesap &amp; lisans</h2>
-      <p>
-        <a href="account.html">Hesap sayfasından</a> kayıt olabilirsin. Lisans anahtarı satın alım sonrası Discord üzerinden tanımlanır;
-        client ileride bu key ile <code>/verify</code> API’sine bağlanacak.
-      </p>
-      <p class="note">Sunucu kurallarına uy — birçok sunucu utility client’ı yasaklar.</p>
+      <h2 data-i18n="section_account_license">Account & license</h2>
+      <p data-i18n-html="account_license_p"></p>
+      <p class="note" data-i18n="note_rules"></p>
     </section>
 
     <section class="panel">
-      <h2>1.8.9 sürümü</h2>
-      <p>
-        Klasik Forge hattı:
-        <a href="https://github.com/Denizwsa/wsamiaw">github.com/Denizwsa/wsamiaw</a>
-      </p>
+      <h2 data-i18n="section_legacy">1.8.9 release</h2>
+      <p data-i18n-html="legacy_p"></p>
     </section>
 
     <footer class="site-footer">
-      <p>Mojang / Microsoft ile bağlantılı değildir.</p>
+      <p data-i18n="footer_disclaimer"></p>
       <p style="margin-top:0.5rem">
         <a href="https://github.com/Denizwsa/wsamiaw-recode">GitHub</a>
         · API: wsamiaw-api.wsamiaw.workers.dev

@@ -24,6 +24,16 @@ a { color: var(--accent-dim); }
   gap: 0.75rem; margin-bottom: 1.5rem; padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
 }
+.nav-left {
+  display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;
+}
+.lang-select {
+  font-family: inherit; font-size: 0.82rem; font-weight: 600;
+  padding: 0.4rem 0.55rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text); cursor: pointer; max-width: 7.5rem;
+}
+.lang-select:focus { outline: none; border-color: var(--accent-dim); }
 .nav-brand { font-weight: 700; color: var(--text); text-decoration: none; }
 .nav-links { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .nav-links a {
