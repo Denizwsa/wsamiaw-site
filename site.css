@@ -118,3 +118,14 @@ input:focus { outline: none; border-color: var(--accent-dim); }
   padding: 0.75rem; background: var(--bg); border-radius: 8px; border: 1px dashed var(--border);
   color: var(--muted);
 }
+.turnstile-wrap { margin: 0.25rem 0 0.5rem; min-height: 65px; }
+.prose { max-width: 52rem; }
+.prose h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
+.prose h2 { font-size: 1.1rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
+.prose p, .prose li { color: var(--muted); font-size: 0.92rem; }
+.prose .lead { font-size: 1rem; color: var(--text); }
+.prose pre {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.85rem 1rem; overflow-x: auto; font-size: 0.82rem; margin: 0.75rem 0;
+}
+.prose code { font-family: ui-monospace, monospace; font-size: 0.88em; }

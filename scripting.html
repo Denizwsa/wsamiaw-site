@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Wsamiaw in-game scripting guide — Java scripts, Script Writer, events and API."/>
+  <title>Scripting — Wsamiaw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
+  <script src="i18n.js" defer></script>
+</head>
+<body data-page-title-key="page_title_scripting">
+  <div class="wrap">
+    <nav class="nav">
+      <div class="nav-left">
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+        </select>
+        <a class="nav-brand" href="index.html">Wsamiaw</a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="account.html" data-i18n="nav_account">Account</a>
+        <a href="scripting.html" data-i18n="nav_scripting">Scripting</a>
+        <a href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener" data-i18n="nav_download">Download</a>
+        <a id="nav-discord" href="#" rel="noopener">Discord</a>
+      </div>
+    </nav>
+
+    <article class="panel prose">
+      <h1>Wsamiaw Scripting</h1>
+      <p class="lead">
+        Java-based scripts compiled inside the client. Each script is a ClickGUI module under <strong>Scripts</strong>.
+      </p>
+
+      <h2>Requirements</h2>
+      <ul>
+        <li><strong>JDK</strong> recommended (runtime <code>javac</code>; ECJ fallback in the mod jar).</li>
+        <li>Minecraft <strong>26.2</strong> + Fabric.</li>
+        <li>Scripts are fully privileged — only run code you trust.</li>
+      </ul>
+
+      <h2>Script folder</h2>
+      <pre><code>.minecraft/config/Wsamiaw/scripts/YourScript.java</code></pre>
+      <p>Compiled classes go to a temp folder; you only edit <code>.java</code> files.</p>
+
+      <h2>Quick start</h2>
+      <ol>
+        <li>Chat: <code>.script create PluginList</code></li>
+        <li>Open <strong>Script Writer</strong> (ClickGUI → Script or <code>.script writer</code>)</li>
+        <li>Save (Ctrl+S) → Compile / Reload (Ctrl+R)</li>
+        <li>ClickGUI → Scripts → enable your module</li>
+      </ol>
+      <pre><code>void onEnable() {
+    host.log("&amp;aScript enabled");
+}
+
+void onUpdate(UpdateEvent e) {
+    // your logic
+}</code></pre>
+
+      <h2>Snippet vs full class</h2>
+      <p>
+        Without <code>extends ScriptBase</code>, the engine wraps your file automatically (<code>sc_name_hash</code>).
+        With <code>extends ScriptBase</code>, you compile a full class and manage imports yourself.
+      </p>
+
+      <h2>Common hooks</h2>
+      <p><code>onLoad</code>, <code>onEnable</code>, <code>onDisable</code>, <code>onUpdate</code>, <code>onPacket</code>,
+        <code>onRender2D</code>, <code>onKey</code>, <code>onAttack</code>, <code>onWorldLoad</code>, …</p>
+      <p>Hooks run only while the script module is <strong>enabled</strong>.</p>
+
+      <h2><code>host</code> API (overview)</h2>
+      <ul>
+        <li><code>host.log</code> / <code>host.notify</code></li>
+        <li><code>host.player</code>, <code>host.world</code>, <code>host.modules</code></li>
+        <li><code>host.settings</code> — sliders, toggles, modes, keybinds in ClickGUI</li>
+        <li><code>host.packets</code> — send / wrap movement, attack, chat, …</li>
+        <li><code>host.render</code> — 2D drawing helpers</li>
+      </ul>
+
+      <h2>Chat commands</h2>
+      <ul>
+        <li><code>.script load</code> — compile all scripts</li>
+        <li><code>.script create &lt;name&gt;</code> — new template file</li>
+        <li><code>.script enable|disable &lt;name&gt;</code></li>
+        <li><code>.script writer</code> — open Script Writer</li>
+      </ul>
+
+      <h2>Full reference</h2>
+      <p>
+        Extended documentation (packets, rendering, examples):
+        <a href="scripting.md">scripting.md</a> in this site folder.
+      </p>
+    </article>
+
+    <footer class="site-footer">
+      <p data-i18n="footer_disclaimer">Not affiliated with Mojang or Microsoft.</p>
+    </footer>
+  </div>
+  <script>
+    document.getElementById("nav-discord").href = WSAMIAW_DISCORD;
+  </script>
+</body>
+</html>

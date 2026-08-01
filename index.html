@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
   <script src="i18n.js" defer></script>
 </head>
 <body data-page-title-key="page_title_home">
@@ -26,8 +27,9 @@
       <div class="nav-links">
         <a href="index.html" data-i18n="nav_home">Home</a>
         <a href="account.html" data-i18n="nav_account">Account</a>
+        <a href="scripting.html" data-i18n="nav_scripting">Scripting</a>
         <a href="https://github.com/Denizwsa/wsamiaw-recode/releases/latest" rel="noopener" data-i18n="nav_download">Download</a>
-        <a href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
+        <a id="nav-discord" href="#" rel="noopener">Discord</a>
       </div>
     </nav>
 
@@ -45,8 +47,8 @@
           Download (GitHub Releases)
         </a>
         <a class="btn btn-secondary" href="account.html" data-i18n="btn_account_login">Account / Sign in</a>
-        <a class="btn btn-secondary" href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
-        <a class="btn btn-secondary" href="scripting.md" data-i18n="btn_scripting">Scripting</a>
+        <a class="btn btn-secondary" id="hero-discord" href="#" rel="noopener">Discord</a>
+        <a class="btn btn-secondary" href="scripting.html" data-i18n="btn_scripting">Scripting</a>
       </div>
     </header>
 
@@ -89,5 +91,9 @@
       </p>
     </footer>
   </div>
+  <script>
+    document.getElementById("nav-discord").href = WSAMIAW_DISCORD;
+    document.getElementById("hero-discord").href = WSAMIAW_DISCORD;
+  </script>
 </body>
 </html>

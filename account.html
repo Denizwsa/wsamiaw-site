@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
   <script src="i18n.js" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=wsamiawTurnstileOnLoad" async defer></script>
+  <script src="turnstile.js" defer></script>
 </head>
 <body data-page-title-key="page_title_account">
   <div class="wrap">
@@ -25,7 +28,8 @@
       <div class="nav-links">
         <a href="index.html" data-i18n="nav_home">Home</a>
         <a href="account.html" data-i18n="nav_account">Account</a>
-        <a href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
+        <a href="scripting.html" data-i18n="nav_scripting">Scripting</a>
+        <a id="nav-discord" href="#" rel="noopener">Discord</a>
       </div>
     </nav>
 
@@ -46,6 +50,7 @@
           <label><span data-i18n="label_password">Password</span>
             <input type="password" name="password" required autocomplete="current-password"/>
           </label>
+          <div id="turnstile-login" class="turnstile-wrap"></div>
           <button type="submit" class="btn btn-primary" style="width:100%" data-i18n="btn_login">Sign in</button>
         </form>
         <form id="form-2fa" class="form" hidden>
@@ -62,6 +67,7 @@
           <label><span data-i18n="label_password_min">Password (min. 8 characters)</span>
             <input type="password" name="password" required minlength="8" autocomplete="new-password"/>
           </label>
+          <div id="turnstile-register" class="turnstile-wrap"></div>
           <button type="submit" class="btn btn-primary" style="width:100%" data-i18n="btn_register">Register</button>
         </form>
         <form id="form-resend" class="form" style="margin-top:0.75rem">
@@ -121,6 +127,16 @@
   </div>
   <script src="api.js"></script>
   <script>
+    document.getElementById("nav-discord").href = WSAMIAW_DISCORD;
+
+    function captchaToken(kind) {
+      if (!window.wsamiawTurnstile || !wsamiawTurnstile.isReady()) {
+        return { ok: false, msg: t("err_captcha_setup") };
+      }
+      const token = wsamiawTurnstile.tokenFor(kind);
+      if (!token) return { ok: false, msg: t("err_captcha") };
+      return { ok: true, token };
+    }
     const tabs = document.querySelectorAll(".tab");
     const formLogin = document.getElementById("form-login");
     const form2fa = document.getElementById("form-2fa");
@@ -219,12 +235,23 @@
     formLogin.addEventListener("submit", async (e) => {
       e.preventDefault();
       formMsg.textContent = "";
+      const cap = captchaToken("login");
+      if (!cap.ok) {
+        showMsg(formMsg, cap.msg, false);
+        return;
+      }
       const fd = new FormData(formLogin);
       const { ok, data } = await apiPost("/login", {
         email: fd.get("email"),
         password: fd.get("password"),
+        turnstile_token: cap.token,
       });
       if (!ok) {
+        wsamiawTurnstile.resetFor("login");
+        if (data.error === "captcha_failed") {
+          showMsg(formMsg, t("err_captcha"), false);
+          return;
+        }
         if (data.error === "email_not_verified") {
           showMsg(formMsg, t("err_verify_first"), false);
           return;
@@ -269,12 +296,23 @@
     formRegister.addEventListener("submit", async (e) => {
       e.preventDefault();
       formMsg.textContent = "";
+      const cap = captchaToken("register");
+      if (!cap.ok) {
+        showMsg(formMsg, cap.msg, false);
+        return;
+      }
       const fd = new FormData(formRegister);
       const { ok, data } = await apiPost("/register", {
         email: fd.get("email"),
         password: fd.get("password"),
+        turnstile_token: cap.token,
       });
       if (!ok) {
+        wsamiawTurnstile.resetFor("register");
+        if (data.error === "captcha_failed") {
+          showMsg(formMsg, t("err_captcha"), false);
+          return;
+        }
         let msg = t("err_register");
         if (data.error === "email_taken") msg = t("err_email_taken");
         if (data.error === "invalid_input") msg = t("err_invalid_input");
