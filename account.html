@@ -71,8 +71,8 @@
           <button type="submit" class="btn btn-primary register-submit" style="width:100%" data-i18n="btn_register">Register</button>
         </form>
         <div id="register-wait" class="register-wait" hidden>
-          <p data-i18n="register_wait">Check your email and click the verification link.</p>
-          <p class="note" data-i18n="register_wait_hint">This page will sign you in automatically once verified.</p>
+          <p>Check your email and click the verification link within <strong>2 minutes</strong>.</p>
+          <p class="note">Stay on this page — you will be signed in automatically once verified.</p>
           <p id="register-countdown" class="register-countdown"></p>
         </div>
         <form id="form-resend" class="form" style="margin-top:0.75rem">
@@ -193,14 +193,14 @@
       const tick = () => {
         const left = expiresAt - Date.now();
         if (left <= 0) {
-          countdownEl.textContent = t("register_countdown_expired");
+          countdownEl.textContent = "Time expired";
           stopRegisterPoll();
-          showMsg(formMsg, t("verify_email_expired"), false);
+          showMsg(formMsg, "Verification link expired. Register again or resend the email.", false);
           showRegisterForm();
           return;
         }
         const sec = Math.ceil(left / 1000);
-        countdownEl.textContent = t("register_countdown").replace("{sec}", String(sec));
+        countdownEl.textContent = "Time left: " + sec + "s";
       };
 
       const poll = async () => {
