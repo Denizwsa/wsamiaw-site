@@ -363,7 +363,25 @@
         return;
       }
       let msg = data.message || t("register_ok");
-      if (data.verify_url) msg += " (Test: " + data.verify_url + ")";
+      if (data.email_sent === false) {
+        msg = t("register_no_email");
+        if (data.email_error === "mail_not_configured") msg += " " + t("mail_not_configured");
+      }
+      if (data.verify_url) {
+        formMsg.innerHTML = "";
+        const p = document.createElement("p");
+        p.className = "msg ok";
+        p.textContent = msg;
+        formMsg.appendChild(p);
+        const a = document.createElement("a");
+        a.href = data.verify_url;
+        a.textContent = t("verify_link_label");
+        a.className = "btn btn-secondary";
+        a.style.marginTop = "0.75rem";
+        a.style.display = "inline-block";
+        formMsg.appendChild(a);
+        return;
+      }
       showMsg(formMsg, msg, true);
     });
 
@@ -376,7 +394,22 @@
         return;
       }
       let msg = data.already_verified ? t("already_verified") : t("resend_ok");
-      if (data.verify_url) msg += " Test link: " + data.verify_url;
+      if (data.sent === false) msg = t("resend_no_email");
+      if (data.verify_url) {
+        formMsg.innerHTML = "";
+        const p = document.createElement("p");
+        p.className = "msg ok";
+        p.textContent = msg;
+        formMsg.appendChild(p);
+        const a = document.createElement("a");
+        a.href = data.verify_url;
+        a.textContent = t("verify_link_label");
+        a.className = "btn btn-secondary";
+        a.style.marginTop = "0.75rem";
+        a.style.display = "inline-block";
+        formMsg.appendChild(a);
+        return;
+      }
       showMsg(formMsg, msg, true);
     });
 

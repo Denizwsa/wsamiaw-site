@@ -56,6 +56,17 @@
       </section>
 
       <section class="panel" style="margin-top:1rem">
+        <h2>Verify user (no email)</h2>
+        <form id="form-verify-user" class="form active" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end">
+          <label style="flex:1;min-width:200px">Email
+            <input type="email" name="email" required/>
+          </label>
+          <button type="submit" class="btn btn-secondary">Mark verified</button>
+        </form>
+        <div id="verify-user-msg"></div>
+      </section>
+
+      <section class="panel" style="margin-top:1rem">
         <h2>Users</h2>
         <div class="data-table-wrap">
           <table class="data-table" id="users-table">
@@ -201,6 +212,19 @@
     });
 
     document.getElementById("btn-refresh").addEventListener("click", () => loadAll());
+
+    document.getElementById("form-verify-user").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = new FormData(e.target).get("email");
+      const msg = document.getElementById("verify-user-msg");
+      const r = await adminPost("/admin/users/verify", { email });
+      if (!r.ok) {
+        showMsg(msg, r.data.error || "Failed", false);
+        return;
+      }
+      showMsg(msg, "Verified: " + r.data.email, true);
+      loadAll();
+    });
 
     document.getElementById("form-create-license").addEventListener("submit", async (e) => {
       e.preventDefault();
