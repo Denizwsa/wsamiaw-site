@@ -10,6 +10,7 @@
   --err: #f87171;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
 body {
   font-family: "DM Sans", system-ui, sans-serif;
   background: var(--bg);
