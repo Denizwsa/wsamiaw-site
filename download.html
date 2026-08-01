@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Download — Wsamiaw</title>
+  <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
+  <script src="i18n.js" defer></script>
+</head>
+<body data-page-title-key="page_title_download">
+  <div class="wrap">
+    <nav class="nav">
+      <div class="nav-left">
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+        </select>
+        <a class="nav-brand" href="index.html">Wsamiaw</a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="account.html" data-i18n="nav_account">Account</a>
+        <a href="scripting.html" data-i18n="nav_scripting">Scripting</a>
+        <a id="nav-discord" href="#" rel="noopener">Discord</a>
+      </div>
+    </nav>
+
+    <section class="panel" id="gate-msg">
+      <h2 data-i18n="download_heading">Download client</h2>
+      <p data-i18n="download_gate">Sign in, bind your license key and HWID on the account page first.</p>
+      <a class="btn btn-primary" href="account.html" data-i18n="btn_account_login">Account / Sign in</a>
+    </section>
+
+    <section class="panel" id="download-ready" hidden>
+      <h2 data-i18n="download_heading">Download client</h2>
+      <p data-i18n="download_ready_text">Your license and HWID are bound. Install the JAR into your Fabric mods folder.</p>
+      <a class="btn btn-primary" id="btn-jar" href="#" rel="noopener" data-i18n="btn_download_jar">Download Wsamiaw JAR</a>
+      <p class="note" style="margin-top:1rem" data-i18n="download_auth_note"></p>
+    </section>
+  </div>
+  <script src="api.js"></script>
+  <script>
+    document.getElementById("nav-discord").href = WSAMIAW_DISCORD;
+    const session = getSession();
+    const gate = document.getElementById("gate-msg");
+    const ready = document.getElementById("download-ready");
+    if (!session) {
+      gate.hidden = false;
+    } else {
+      apiGet("/license/me", session.token).then(({ ok, data }) => {
+        if (ok && data.download_ready) {
+          gate.hidden = true;
+          ready.hidden = false;
+          apiGet("/download/url", session.token).then((r) => {
+            if (r.ok && r.data.url) document.getElementById("btn-jar").href = r.data.url;
+          });
+        } else {
+          gate.hidden = false;
+          ready.hidden = true;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

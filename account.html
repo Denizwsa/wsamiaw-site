@@ -111,16 +111,22 @@
           <div id="2fa-msg"></div>
         </div>
 
-        <p data-i18n="license_intro"></p>
-        <p class="license-key" id="license-hint" data-i18n="license_hint"></p>
-        <p class="note" style="margin-top:1rem" data-i18n="license_test_note"></p>
-        <form id="form-verify" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
-          <label><span data-i18n="label_license_key">License key</span>
-            <input type="text" name="key" placeholder="WSAM-...." autocomplete="off"/>
-          </label>
-          <button type="submit" class="btn btn-secondary" data-i18n="btn_check_license">Verify</button>
-        </form>
-        <div id="verify-msg"></div>
+        <div id="panel-license" style="margin-bottom:1.25rem;padding-top:0.5rem;border-top:1px solid var(--border, #333)">
+          <h3 style="font-size:1rem;margin-bottom:0.5rem" data-i18n="license_heading">License & download</h3>
+          <p id="license-status" class="note"></p>
+          <p class="note"><a href="hwid.html" data-i18n="hwid_link">How to get your HWID</a></p>
+          <form id="form-activate" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
+            <label><span data-i18n="label_license_key">License key</span>
+              <input type="text" name="key" placeholder="WSAM-...." autocomplete="off" required/>
+            </label>
+            <label><span data-i18n="label_hwid">HWID (32 characters)</span>
+              <input type="text" name="hwid" pattern="[a-fA-F0-9]{32}" maxlength="32" autocomplete="off" required/>
+            </label>
+            <button type="submit" class="btn btn-secondary" data-i18n="btn_activate_license">Bind key & HWID</button>
+          </form>
+          <div id="license-msg"></div>
+          <a id="btn-go-download" class="btn btn-primary" href="download.html" hidden style="margin-top:0.75rem;display:inline-block" data-i18n="btn_go_download">Download client</a>
+        </div>
         <button type="button" id="btn-logout" class="btn btn-ghost" style="margin-top:1.25rem;width:100%" data-i18n="btn_logout">Sign out</button>
       </section>
     </div>
@@ -168,6 +174,41 @@
       });
     });
 
+    async function refreshLicense(session) {
+      const statusEl = document.getElementById("license-status");
+      const msgEl = document.getElementById("license-msg");
+      const goDl = document.getElementById("btn-go-download");
+      const formActivate = document.getElementById("form-activate");
+      const { ok, data } = await apiGet("/license/me", session.token);
+      if (!ok) {
+        statusEl.textContent = t("license_status_error");
+        goDl.hidden = true;
+        return;
+      }
+      const active = (data.licenses || []).filter((l) => l.active);
+      if (active.length === 0) {
+        statusEl.textContent = t("license_none");
+        goDl.hidden = true;
+        formActivate.hidden = false;
+        return;
+      }
+      const lic = active[0];
+      if (data.download_ready) {
+        statusEl.textContent = t("license_ready") + (lic.plan ? " (" + lic.plan + ")" : "");
+        goDl.hidden = false;
+        formActivate.hidden = true;
+        msgEl.textContent = "";
+      } else if (lic.hwid_bound) {
+        statusEl.textContent = t("license_hwid_pending");
+        goDl.hidden = true;
+        formActivate.hidden = true;
+      } else {
+        statusEl.textContent = t("license_need_hwid") + (lic.plan ? " (" + lic.plan + ")" : "");
+        goDl.hidden = true;
+        formActivate.hidden = false;
+      }
+    }
+
     async function refreshAccount(session) {
       const { ok, data } = await apiGet("/account", session.token);
       if (!ok) {
@@ -178,6 +219,8 @@
       document.getElementById("user-verified").textContent = data.email_verified
         ? t("verified_ok")
         : t("verified_pending");
+
+      await refreshLicense(session);
 
       const status = document.getElementById("2fa-status");
       const setup = document.getElementById("2fa-setup");
@@ -390,16 +433,30 @@
       refreshAccount(session);
     });
 
-    document.getElementById("form-verify").addEventListener("submit", async (e) => {
+    document.getElementById("form-activate").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const verifyMsg = document.getElementById("verify-msg");
-      const key = new FormData(e.target).get("key");
-      const { data } = await apiPost("/verify", { key: key });
-      if (data.valid) {
-        showMsg(verifyMsg, t("license_valid") + (data.plan ? " (" + data.plan + ")" : "") + ".", true);
-      } else {
-        showMsg(verifyMsg, t("license_invalid"), false);
+      const session = getSession();
+      if (!session) return;
+      const msgEl = document.getElementById("license-msg");
+      const fd = new FormData(e.target);
+      const key = String(fd.get("key") || "").trim();
+      const hwid = String(fd.get("hwid") || "").trim().toLowerCase();
+      if (!/^[a-f0-9]{32}$/.test(hwid)) {
+        showMsg(msgEl, t("err_hwid_format"), false);
+        return;
       }
+      const { ok, data } = await apiPost("/license/activate", { key, hwid }, session.token);
+      if (!ok) {
+        let msg = t("license_activate_fail");
+        if (data.error === "invalid_key") msg = t("license_invalid_key");
+        if (data.error === "hwid_mismatch") msg = t("license_hwid_mismatch");
+        if (data.error === "expired") msg = t("license_expired");
+        if (data.error === "revoked") msg = t("license_revoked");
+        showMsg(msgEl, msg, false);
+        return;
+      }
+      showMsg(msgEl, t("license_activate_ok"), true);
+      refreshLicense(session);
     });
 
     document.getElementById("lang-select").addEventListener("change", () => {

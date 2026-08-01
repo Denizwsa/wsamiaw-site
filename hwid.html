@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HWID — Wsamiaw</title>
+  <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
+  <script src="i18n.js" defer></script>
+</head>
+<body data-page-title-key="page_title_hwid">
+  <div class="wrap">
+    <nav class="nav">
+      <div class="nav-left">
+        <select id="lang-select" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+        </select>
+        <a class="nav-brand" href="index.html">Wsamiaw</a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="account.html" data-i18n="nav_account">Account</a>
+        <a href="download.html" data-i18n="nav_download">Download</a>
+        <a id="nav-discord" href="#" rel="noopener">Discord</a>
+      </div>
+    </nav>
+
+    <section class="panel">
+      <h2 data-i18n="hwid_heading">Your HWID</h2>
+      <p data-i18n="hwid_intro"></p>
+      <ol class="setup-list" style="margin:1rem 0">
+        <li data-i18n="hwid_step1"></li>
+        <li data-i18n="hwid_step2"></li>
+        <li data-i18n="hwid_step3"></li>
+      </ol>
+      <a class="btn btn-secondary" href="hwid/HwidCli.java" download="HwidCli.java" data-i18n="btn_download_hwid_cli">Download HwidCli.java</a>
+      <p class="note" style="margin-top:1rem" data-i18n="hwid_after"></p>
+      <a class="btn btn-primary" href="account.html" data-i18n="btn_activate_license">Activate license on account</a>
+    </section>
+  </div>
+  <script>
+    document.getElementById("nav-discord").href = WSAMIAW_DISCORD;
+  </script>
+</body>
+</html>
