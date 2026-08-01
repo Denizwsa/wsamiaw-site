@@ -211,6 +211,19 @@ input:focus { outline: none; border-color: var(--accent-dim); }
 .data-table th { color: var(--muted); font-weight: 600; }
 .data-table-wrap { overflow-x: auto; margin-top: 0.75rem; }
 .btn-sm { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+.register-wait {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+.register-countdown {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 0.75rem;
+}
 .prose { max-width: 52rem; }
 .prose h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
 .prose h2 { font-size: 1.1rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
