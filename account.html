@@ -12,6 +12,7 @@
   <script src="i18n.js" defer></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=wsamiawTurnstileOnLoad" async defer></script>
   <script src="turnstile.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
 </head>
 <body data-page-title-key="page_title_account">
   <div class="wrap">
@@ -73,6 +74,7 @@
         <div id="register-wait" class="register-wait" hidden>
           <p>Check your email and click the verification link within <strong>2 minutes</strong>.</p>
           <p class="note">Stay on this page — you will be signed in automatically once verified.</p>
+          <p class="note">If nothing arrives, check <strong>Spam</strong> / <strong>All mail</strong> (Proton may delay 1–2 min).</p>
           <p id="register-countdown" class="register-countdown"></p>
         </div>
         <form id="form-resend" class="form" style="margin-top:0.75rem">
@@ -97,6 +99,8 @@
           <p id="2fa-status" class="note"></p>
           <div id="2fa-setup" hidden>
             <p class="note" data-i18n="twofa_setup_note"></p>
+            <canvas id="2fa-qr" class="twofa-qr" width="200" height="200" aria-label="2FA QR code"></canvas>
+            <p class="note" data-i18n="twofa_manual_key">Or enter this key manually:</p>
             <p class="license-key" id="2fa-secret"></p>
             <p class="note"><a id="2fa-otpauth" href="#" target="_blank" rel="noopener" data-i18n="twofa_otpauth"></a></p>
             <form id="form-2fa-enable" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
@@ -470,6 +474,14 @@
       }
       let msg = data.already_verified ? t("already_verified") : t("resend_ok");
       if (data.sent === false) msg = t("resend_no_email");
+      if (data.poll_token && data.verify_expires_at) {
+        tabs.forEach((x) => x.classList.remove("active"));
+        document.querySelector('.tab[data-tab="register"]')?.classList.add("active");
+        formLogin.classList.remove("active");
+        formRegister.classList.add("active");
+        startRegisterPoll(data.poll_token, data.verify_expires_at);
+        return;
+      }
       if (data.verify_url) {
         formMsg.innerHTML = "";
         const p = document.createElement("p");
@@ -495,6 +507,34 @@
       showGuest();
     });
 
+    function render2faQr(otpauthUrl) {
+      const canvas = document.getElementById("2fa-qr");
+      if (!canvas || !otpauthUrl) return;
+      canvas.hidden = false;
+      const draw = () => {
+        if (typeof QRCode === "undefined") return;
+        QRCode.toCanvas(
+          canvas,
+          otpauthUrl,
+          {
+            width: 200,
+            margin: 2,
+            color: { dark: "#111111", light: "#ffffff" },
+          },
+          (err) => {
+            if (err) canvas.hidden = true;
+          }
+        );
+      };
+      if (typeof QRCode !== "undefined") draw();
+      else {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
+        s.onload = draw;
+        document.head.appendChild(s);
+      }
+    }
+
     document.getElementById("btn-2fa-start").addEventListener("click", async () => {
       const session = getSession();
       if (!session) return;
@@ -508,6 +548,7 @@
       const link = document.getElementById("2fa-otpauth");
       link.href = data.otpauth;
       link.textContent = t("open_authenticator");
+      render2faQr(data.otpauth);
       document.getElementById("2fa-setup").hidden = false;
       document.getElementById("btn-2fa-start").hidden = true;
       showMsg(msgEl, t("twofa_setup_ok"), true);
