@@ -119,6 +119,8 @@
       resend_no_email: "Email was not sent — use the verification link below.",
       verify_link_label: "Open verification link",
       mail_not_configured: "(Mail API not configured on server.)",
+      resend_domain_required:
+        "Account created. Resend cannot mail this address yet — verify wsamiawclient.lol at resend.com/domains, then set FROM_EMAIL. Use the verification link below for now.",
       err_not_found: "Email not found.",
       err_resend: "Could not send.",
       resend_ok: "Email sent (or API mail not configured).",

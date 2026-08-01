@@ -366,6 +366,7 @@
       if (data.email_sent === false) {
         msg = t("register_no_email");
         if (data.email_error === "mail_not_configured") msg += " " + t("mail_not_configured");
+        else if (data.email_error === "resend_domain_required") msg = t("resend_domain_required");
       }
       if (data.verify_url) {
         formMsg.innerHTML = "";
