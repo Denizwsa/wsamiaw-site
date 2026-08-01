@@ -54,6 +54,7 @@
           <button type="submit" class="btn btn-primary" style="width:100%" data-i18n="btn_login">Sign in</button>
         </form>
         <form id="form-2fa" class="form" hidden>
+          <h3 style="font-size:1rem;margin-bottom:0.5rem" data-i18n="twofa_login_heading">Two-factor authentication</h3>
           <p data-i18n="twofa_prompt"></p>
           <label><span data-i18n="label_code">Code</span>
             <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code"/>
@@ -93,6 +94,12 @@
         <p id="user-email" style="margin-bottom:0.5rem"></p>
         <p id="user-verified" class="note" style="margin-bottom:1rem"></p>
 
+        <div id="twofa-nudge" class="twofa-nudge" hidden>
+          <p class="twofa-nudge-title" data-i18n="twofa_nudge_title">Enable two-factor authentication</p>
+          <p class="note" data-i18n="twofa_nudge_body">For your security, please turn on 2FA on your account.</p>
+          <button type="button" id="twofa-nudge-btn" class="btn btn-secondary" data-i18n="btn_setup_2fa">Set up 2FA</button>
+        </div>
+
         <div id="panel-2fa" style="margin-bottom:1.25rem;padding-top:0.5rem;border-top:1px solid var(--border, #333)">
           <h3 style="font-size:1rem;margin-bottom:0.5rem" data-i18n="twofa_heading"></h3>
           <p id="2fa-status" class="note"></p>
@@ -100,7 +107,6 @@
           <div id="2fa-setup" hidden>
             <p class="note" id="2fa-setup-intro">Scan the QR code with Google Authenticator, Authy, etc.</p>
             <img id="2fa-qr-img" class="twofa-qr" width="200" height="200" alt="2FA QR code" hidden/>
-            <canvas id="2fa-qr" class="twofa-qr" width="200" height="200" hidden aria-hidden="true"></canvas>
             <p class="note">Or enter this key manually:</p>
             <p class="license-key" id="2fa-secret"></p>
             <p class="note"><a id="2fa-otpauth" href="#" target="_blank" rel="noopener" data-i18n="twofa_otpauth">Open in authenticator</a></p>
@@ -294,7 +300,6 @@
       await refreshLicense(session);
 
       const status = document.getElementById("2fa-status");
-      const setup = document.getElementById("2fa-setup");
       const disableForm = document.getElementById("form-2fa-disable");
       const startBtn = document.getElementById("btn-2fa-start");
 
@@ -303,12 +308,37 @@
         reset2faSetup();
         disableForm.hidden = false;
         startBtn.hidden = true;
+        document.getElementById("twofa-nudge").hidden = true;
       } else {
         status.textContent = t("twofa_off");
         disableForm.hidden = true;
         startBtn.hidden = false;
         reset2faSetup();
+        document.getElementById("twofa-nudge").hidden = false;
       }
+    }
+
+    function showLogin2faStep() {
+      tabs.forEach((x) => x.classList.remove("active"));
+      document.querySelector('.tab[data-tab="login"]')?.classList.add("active");
+      formRegister.classList.remove("active");
+      formRegister.hidden = true;
+      formResend.hidden = true;
+      formLogin.hidden = true;
+      formLogin.classList.remove("active");
+      form2fa.hidden = false;
+      form2fa.classList.add("active");
+    }
+
+    function resetGuestForms() {
+      form2fa.hidden = true;
+      form2fa.classList.remove("active");
+      formLogin.hidden = false;
+      formLogin.classList.add("active");
+      formRegister.hidden = false;
+      formResend.hidden = false;
+      pending2faToken = null;
+      pending2faEmail = null;
     }
 
     function reset2faSetup() {
@@ -318,29 +348,15 @@
       const img = document.getElementById("2fa-qr-img");
       img.hidden = true;
       img.removeAttribute("src");
-      const canvas = document.getElementById("2fa-qr");
-      canvas.hidden = true;
-      const ctx = canvas.getContext("2d");
-      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function render2faQr(otpauthUrl) {
       if (!otpauthUrl) return;
       const img = document.getElementById("2fa-qr-img");
-      const canvas = document.getElementById("2fa-qr");
       img.src =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=" +
         encodeURIComponent(otpauthUrl);
       img.hidden = false;
-      canvas.hidden = true;
-      if (typeof QRCode !== "undefined") {
-        QRCode.toCanvas(canvas, otpauthUrl, { width: 200, margin: 2 }, (err) => {
-          if (!err) {
-            img.hidden = true;
-            canvas.hidden = false;
-          }
-        });
-      }
     }
 
     function showUser(session) {
@@ -353,8 +369,7 @@
     function showGuest() {
       guest.hidden = false;
       userPanel.hidden = true;
-      pending2faToken = null;
-      pending2faEmail = null;
+      resetGuestForms();
     }
 
     async function tryVerifyEmailFromUrl() {
@@ -412,9 +427,9 @@
       if (data.requires_2fa) {
         pending2faToken = data.pending_token;
         pending2faEmail = data.email;
-        formLogin.hidden = true;
-        form2fa.hidden = false;
+        showLogin2faStep();
         showMsg(formMsg, t("twofa_required"), true);
+        form2fa.querySelector('input[name="code"]')?.focus();
         return;
       }
       saveSession(data.token, data.email);
@@ -434,9 +449,13 @@
         return;
       }
       saveSession(data.token, data.email);
-      form2fa.hidden = true;
-      formLogin.hidden = false;
+      resetGuestForms();
       showUser({ email: data.email, token: data.token });
+    });
+
+    document.getElementById("twofa-nudge-btn").addEventListener("click", () => {
+      document.getElementById("panel-2fa")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("btn-2fa-start")?.click();
     });
 
     formRegister.addEventListener("submit", async (e) => {
@@ -538,25 +557,6 @@
       clearSession();
       showGuest();
     });
-
-    function render2faQr(otpauthUrl) {
-      if (!otpauthUrl) return;
-      const img = document.getElementById("2fa-qr-img");
-      const canvas = document.getElementById("2fa-qr");
-      img.src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=" +
-        encodeURIComponent(otpauthUrl);
-      img.hidden = false;
-      canvas.hidden = true;
-      if (typeof QRCode !== "undefined") {
-        QRCode.toCanvas(canvas, otpauthUrl, { width: 200, margin: 2 }, (err) => {
-          if (!err) {
-            img.hidden = true;
-            canvas.hidden = false;
-          }
-        });
-      }
-    }
 
     document.getElementById("btn-2fa-start").addEventListener("click", async () => {
       const session = getSession();

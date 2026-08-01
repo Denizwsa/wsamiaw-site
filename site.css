@@ -192,6 +192,18 @@ input:focus { outline: none; border-color: var(--accent-dim); }
   max-width: 100%;
   height: auto;
 }
+.twofa-nudge {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  background: rgba(251, 191, 36, 0.08);
+}
+.twofa-nudge-title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--warn);
+}
 @media (max-width: 720px) {
   .admin-shell { flex-direction: column; }
   .admin-sidebar { width: 100%; min-height: auto; position: static; flex-direction: row; flex-wrap: wrap; align-items: center; }
