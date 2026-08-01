@@ -36,3 +36,39 @@ function getSession() {
   if (!token || !email) return null;
   return { token, email };
 }
+
+const ADMIN_KEY_STORAGE = "wsamiaw_admin_key";
+
+function saveAdminKey(key) {
+  sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
+}
+
+function clearAdminKey() {
+  sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+}
+
+function getAdminKey() {
+  return sessionStorage.getItem(ADMIN_KEY_STORAGE);
+}
+
+async function adminGet(path) {
+  const key = getAdminKey();
+  if (!key) return { ok: false, status: 401, data: { error: "no_key" } };
+  const res = await fetch(WSAMIAW_API + path, {
+    headers: { "X-Admin-Key": key },
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
+async function adminPost(path, body) {
+  const key = getAdminKey();
+  if (!key) return { ok: false, status: 401, data: { error: "no_key" } };
+  const res = await fetch(WSAMIAW_API + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Admin-Key": key },
+    body: JSON.stringify(body ?? {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}

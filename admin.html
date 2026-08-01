@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin — Wsamiaw</title>
+  <link rel="stylesheet" href="site.css"/>
+  <script src="site-config.js"></script>
+</head>
+<body>
+  <div class="wrap admin-wrap">
+    <section class="panel" id="gate">
+      <h2>Admin</h2>
+      <p class="note">Enter the admin secret key (not your user password).</p>
+      <form id="form-admin-login" class="form active" style="max-width:420px">
+        <label>Admin key
+          <input type="password" name="key" autocomplete="off" required minlength="16"/>
+        </label>
+        <button type="submit" class="btn btn-primary">Unlock</button>
+      </form>
+      <div id="gate-msg" class="msg" hidden></div>
+    </section>
+
+    <div id="dashboard" hidden>
+      <nav class="nav" style="margin-bottom:1.25rem">
+        <span class="nav-brand">Wsamiaw Admin</span>
+        <div class="nav-links">
+          <button type="button" class="btn btn-ghost" id="btn-refresh">Refresh</button>
+          <button type="button" class="btn btn-ghost" id="btn-admin-logout">Lock</button>
+        </div>
+      </nav>
+
+      <section class="panel">
+        <h2>Overview</h2>
+        <div class="admin-stats" id="stats"></div>
+      </section>
+
+      <section class="panel" style="margin-top:1rem">
+        <h2>Create license</h2>
+        <form id="form-create-license" class="form active" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+          <label>User email
+            <input type="email" name="email" required placeholder="buyer@email.com"/>
+          </label>
+          <label>Plan
+            <input type="text" name="plan" value="lifetime"/>
+          </label>
+          <label>Custom key (optional)
+            <input type="text" name="key" placeholder="auto-generated"/>
+          </label>
+          <label>Expires (ms timestamp, optional)
+            <input type="text" name="expires_at" placeholder="empty = never"/>
+          </label>
+          <button type="submit" class="btn btn-secondary" style="grid-column:1/-1">Create license</button>
+        </form>
+        <div id="create-msg"></div>
+      </section>
+
+      <section class="panel" style="margin-top:1rem">
+        <h2>Users</h2>
+        <div class="data-table-wrap">
+          <table class="data-table" id="users-table">
+            <thead>
+              <tr><th>ID</th><th>Email</th><th>Verified</th><th>2FA</th><th>Created</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:1rem">
+        <h2>Licenses</h2>
+        <div class="data-table-wrap">
+          <table class="data-table" id="licenses-table">
+            <thead>
+              <tr>
+                <th>Key</th><th>Email</th><th>Plan</th><th>HWID</th><th>Active</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script src="api.js"></script>
+  <script>
+    const gate = document.getElementById("gate");
+    const dashboard = document.getElementById("dashboard");
+    const gateMsg = document.getElementById("gate-msg");
+
+    function showMsg(el, text, ok) {
+      el.hidden = false;
+      el.className = "msg " + (ok ? "ok" : "err");
+      el.textContent = text;
+    }
+
+    function fmtDate(ms) {
+      if (!ms) return "—";
+      try {
+        return new Date(ms).toLocaleString();
+      } catch {
+        return String(ms);
+      }
+    }
+
+    function shortHwid(h) {
+      if (!h) return "—";
+      return h.length > 12 ? h.slice(0, 8) + "…" : h;
+    }
+
+    async function loadAll() {
+      const ov = await adminGet("/admin/overview");
+      if (!ov.ok) throw new Error("overview");
+      const stats = document.getElementById("stats");
+      stats.innerHTML = [
+        ["Users", ov.data.users],
+        ["Verified", ov.data.users_verified],
+        ["Licenses", ov.data.licenses],
+        ["Active licenses", ov.data.licenses_active],
+      ]
+        .map(
+          ([k, v]) =>
+            `<div class="admin-stat"><div class="note">${k}</div><div style="font-size:1.4rem;font-weight:700">${v}</div></div>`
+        )
+        .join("");
+
+      const u = await adminGet("/admin/users");
+      const utb = document.querySelector("#users-table tbody");
+      utb.innerHTML = (u.data.users || [])
+        .map(
+          (row) =>
+            `<tr><td>${row.id}</td><td>${row.email}</td><td>${row.email_verified ? "yes" : "no"}</td><td>${row.totp_enabled ? "yes" : "no"}</td><td>${fmtDate(row.created_at)}</td></tr>`
+        )
+        .join("");
+
+      const l = await adminGet("/admin/licenses");
+      const ltb = document.querySelector("#licenses-table tbody");
+      ltb.innerHTML = (l.data.licenses || [])
+        .map((row) => {
+          const actions = [];
+          if (row.revoked) {
+            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="unrevoke" data-key="${row.key}">Unrevoke</button>`);
+          } else {
+            actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="revoke" data-key="${row.key}">Revoke</button>`);
+          }
+          actions.push(`<button type="button" class="btn btn-ghost btn-sm" data-act="clear_hwid" data-key="${row.key}">Clear HWID</button>`);
+          return `<tr>
+            <td class="license-key" style="font-size:0.75rem">${row.key}</td>
+            <td>${row.email || row.user_id}</td>
+            <td>${row.plan}</td>
+            <td>${shortHwid(row.hwid)}</td>
+            <td>${row.active && !row.revoked ? "yes" : "no"}</td>
+            <td style="white-space:nowrap">${actions.join(" ")}</td>
+          </tr>`;
+        })
+        .join("");
+
+      ltb.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const key = btn.dataset.key;
+          const act = btn.dataset.act;
+          let body = { key };
+          if (act === "revoke") body.revoked = true;
+          if (act === "unrevoke") body.revoked = false;
+          if (act === "clear_hwid") body.clear_hwid = true;
+          const r = await adminPost("/admin/licenses/update", body);
+          if (r.ok) loadAll();
+        });
+      });
+    }
+
+    function showDashboard() {
+      gate.hidden = true;
+      dashboard.hidden = false;
+      loadAll().catch(() => {
+        clearAdminKey();
+        gate.hidden = false;
+        dashboard.hidden = true;
+        showMsg(gateMsg, "Session invalid — enter key again.", false);
+      });
+    }
+
+    document.getElementById("form-admin-login").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const key = new FormData(e.target).get("key");
+      saveAdminKey(String(key || "").trim());
+      const ping = await adminGet("/admin/ping");
+      if (!ping.ok) {
+        clearAdminKey();
+        showMsg(gateMsg, "Invalid admin key.", false);
+        return;
+      }
+      gateMsg.hidden = true;
+      showDashboard();
+    });
+
+    document.getElementById("btn-admin-logout").addEventListener("click", () => {
+      clearAdminKey();
+      dashboard.hidden = true;
+      gate.hidden = false;
+    });
+
+    document.getElementById("btn-refresh").addEventListener("click", () => loadAll());
+
+    document.getElementById("form-create-license").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = {
+        email: fd.get("email"),
+        plan: fd.get("plan"),
+      };
+      const customKey = String(fd.get("key") || "").trim();
+      const exp = String(fd.get("expires_at") || "").trim();
+      if (customKey) body.key = customKey;
+      if (exp) body.expires_at = exp;
+      const msg = document.getElementById("create-msg");
+      const r = await adminPost("/admin/licenses/create", body);
+      if (!r.ok) {
+        showMsg(msg, r.data.error || "Failed", false);
+        return;
+      }
+      showMsg(msg, "Created: " + r.data.key, true);
+      e.target.reset();
+      e.target.querySelector("[name=plan]").value = "lifetime";
+      loadAll();
+    });
+
+    if (getAdminKey()) {
+      adminGet("/admin/ping").then((p) => {
+        if (p.ok) showDashboard();
+      });
+    }
+  </script>
+</body>
+</html>
