@@ -249,6 +249,8 @@
       resend_no_email: "E-posta gönderilmedi — aşağıdaki doğrulama linkini kullan.",
       verify_link_label: "Doğrulama linkini aç",
       mail_not_configured: "(Sunucuda mail API ayarlı değil.)",
+      resend_domain_required:
+        "Hesap oluştu. Resend şu an sadece test modunda (kendi Gmail’ine gider). Herkese mail için resend.com/domains üzerinden wsamiawclient.lol domainini doğrula, sonra FROM_EMAIL ayarla. Şimdilik aşağıdaki doğrulama linkini kullan.",
       err_not_found: "E-posta bulunamadı.",
       err_resend: "Gönderilemedi.",
       resend_ok: "Mail gönderildi (veya API ayarlı değil).",
