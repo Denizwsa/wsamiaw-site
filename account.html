@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Hesap — Wsamiaw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="site.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="nav-brand" href="index.html">Wsamiaw</a>
+      <div class="nav-links">
+        <a href="index.html">Ana sayfa</a>
+        <a href="account.html">Hesap</a>
+        <a href="https://discord.gg/nMTEzHcwSW" rel="noopener">Discord</a>
+      </div>
+    </nav>
+
+    <div id="verify-banner" class="msg" hidden style="margin-bottom:1rem"></div>
+
+    <div id="guest" class="account-box">
+      <section class="panel">
+        <h2>Hesap</h2>
+        <p style="margin-bottom:1rem">Kayıt ol veya giriş yap. E-posta doğrulaması zorunlu. İsteğe bağlı 2FA (Google Authenticator vb.).</p>
+        <div class="tabs">
+          <button type="button" class="tab active" data-tab="login">Giriş</button>
+          <button type="button" class="tab" data-tab="register">Kayıt</button>
+        </div>
+        <form id="form-login" class="form active">
+          <label>E-posta
+            <input type="email" name="email" required autocomplete="email"/>
+          </label>
+          <label>Şifre
+            <input type="password" name="password" required autocomplete="current-password"/>
+          </label>
+          <button type="submit" class="btn btn-primary" style="width:100%">Giriş yap</button>
+        </form>
+        <form id="form-2fa" class="form" hidden>
+          <p>2FA kodunu gir (6 haneli).</p>
+          <label>Kod
+            <input type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code"/>
+          </label>
+          <button type="submit" class="btn btn-primary" style="width:100%">Doğrula</button>
+        </form>
+        <form id="form-register" class="form">
+          <label>E-posta
+            <input type="email" name="email" required autocomplete="email"/>
+          </label>
+          <label>Şifre (en az 8 karakter)
+            <input type="password" name="password" required minlength="8" autocomplete="new-password"/>
+          </label>
+          <button type="submit" class="btn btn-primary" style="width:100%">Kayıt ol</button>
+        </form>
+        <form id="form-resend" class="form" style="margin-top:0.75rem">
+          <p class="note">Doğrulama maili gelmedi?</p>
+          <label>E-posta
+            <input type="email" name="email" autocomplete="email"/>
+          </label>
+          <button type="submit" class="btn btn-ghost" style="width:100%">Doğrulama mailini tekrar gönder</button>
+        </form>
+        <div id="form-msg"></div>
+      </section>
+    </div>
+
+    <div id="user" class="account-box" hidden>
+      <section class="panel">
+        <h2>Hoş geldin</h2>
+        <p id="user-email" style="margin-bottom:0.5rem"></p>
+        <p id="user-verified" class="note" style="margin-bottom:1rem"></p>
+
+        <div id="panel-2fa" style="margin-bottom:1.25rem;padding-top:0.5rem;border-top:1px solid var(--border, #333)">
+          <h3 style="font-size:1rem;margin-bottom:0.5rem">İki adımlı doğrulama (2FA)</h3>
+          <p id="2fa-status" class="note"></p>
+          <div id="2fa-setup" hidden>
+            <p class="note">Authenticator uygulamasına ekle (manuel key):</p>
+            <p class="license-key" id="2fa-secret"></p>
+            <p class="note"><a id="2fa-otpauth" href="#" target="_blank" rel="noopener">otpauth linki</a></p>
+            <form id="form-2fa-enable" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
+              <label>İlk kod
+                <input type="text" name="code" inputmode="numeric" maxlength="8"/>
+              </label>
+              <button type="submit" class="btn btn-secondary">2FA’yı aç</button>
+            </form>
+          </div>
+          <form id="form-2fa-disable" hidden style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
+            <label>Kod ile kapat
+              <input type="text" name="code" inputmode="numeric" maxlength="8"/>
+            </label>
+            <button type="submit" class="btn btn-ghost">2FA’yı kapat</button>
+          </form>
+          <button type="button" id="btn-2fa-start" class="btn btn-secondary" hidden>2FA kur</button>
+          <div id="2fa-msg"></div>
+        </div>
+
+        <p>Lisans anahtarın (client’ta veya launcher’da gir):</p>
+        <p class="license-key" id="license-hint">Henüz atanmadı — Discord’dan satın alım sonrası eklenir.</p>
+        <p class="note" style="margin-top:1rem">Anahtarı test etmek için aşağıya yapıştır.</p>
+        <form id="form-verify" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem">
+          <label>Lisans key
+            <input type="text" name="key" placeholder="WSAM-...." autocomplete="off"/>
+          </label>
+          <button type="submit" class="btn btn-secondary">Doğrula</button>
+        </form>
+        <div id="verify-msg"></div>
+        <button type="button" id="btn-logout" class="btn btn-ghost" style="margin-top:1.25rem;width:100%">Çıkış</button>
+      </section>
+    </div>
+  </div>
+  <script src="api.js"></script>
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const formLogin = document.getElementById("form-login");
+    const form2fa = document.getElementById("form-2fa");
+    const formRegister = document.getElementById("form-register");
+    const formResend = document.getElementById("form-resend");
+    const formMsg = document.getElementById("form-msg");
+    const guest = document.getElementById("guest");
+    const userPanel = document.getElementById("user");
+    const verifyBanner = document.getElementById("verify-banner");
+
+    let pending2faToken = null;
+    let pending2faEmail = null;
+
+    function showMsg(el, text, ok) {
+      el.className = "msg " + (ok ? "ok" : "err");
+      el.textContent = text;
+    }
+
+    tabs.forEach((t) => {
+      t.addEventListener("click", () => {
+        tabs.forEach((x) => x.classList.remove("active"));
+        t.classList.add("active");
+        const name = t.dataset.tab;
+        formLogin.classList.toggle("active", name === "login");
+        formRegister.classList.toggle("active", name === "register");
+        formLogin.hidden = false;
+        form2fa.hidden = true;
+        formMsg.textContent = "";
+      });
+    });
+
+    async function refreshAccount(session) {
+      const { ok, data } = await apiGet("/account", session.token);
+      if (!ok) {
+        clearSession();
+        showGuest();
+        return;
+      }
+      document.getElementById("user-verified").textContent = data.email_verified
+        ? "E-posta doğrulandı."
+        : "E-posta henüz doğrulanmadı — giriş için maildeki linke tıkla.";
+
+      const status = document.getElementById("2fa-status");
+      const setup = document.getElementById("2fa-setup");
+      const disableForm = document.getElementById("form-2fa-disable");
+      const startBtn = document.getElementById("btn-2fa-start");
+
+      if (data.totp_enabled) {
+        status.textContent = "2FA açık.";
+        setup.hidden = true;
+        disableForm.hidden = false;
+        startBtn.hidden = true;
+      } else {
+        status.textContent = "2FA kapalı.";
+        disableForm.hidden = true;
+        startBtn.hidden = false;
+        setup.hidden = true;
+      }
+    }
+
+    function showUser(session) {
+      guest.hidden = true;
+      userPanel.hidden = false;
+      document.getElementById("user-email").textContent = session.email;
+      refreshAccount(session);
+    }
+
+    function showGuest() {
+      guest.hidden = false;
+      userPanel.hidden = true;
+      pending2faToken = null;
+      pending2faEmail = null;
+    }
+
+    async function tryVerifyEmailFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("verify");
+      if (!token) return;
+      const { ok, data } = await apiPost("/verify-email", { token });
+      verifyBanner.hidden = false;
+      if (ok) {
+        showMsg(verifyBanner, "E-posta doğrulandı. Giriş yapabilirsin.", true);
+      } else {
+        const err = data.error === "token_expired" ? "Link süresi doldu — tekrar gönder." : "Doğrulama başarısız.";
+        showMsg(verifyBanner, err, false);
+      }
+      history.replaceState({}, "", "account.html");
+    }
+
+    tryVerifyEmailFromUrl();
+
+    const existing = getSession();
+    if (existing) showUser(existing);
+
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formMsg.textContent = "";
+      const fd = new FormData(formLogin);
+      const { ok, data } = await apiPost("/login", {
+        email: fd.get("email"),
+        password: fd.get("password"),
+      });
+      if (!ok) {
+        if (data.error === "email_not_verified") {
+          showMsg(formMsg, "Önce e-postanı doğrula. Gerekirse aşağıdan maili tekrar iste.", false);
+          return;
+        }
+        showMsg(
+          formMsg,
+          data.error === "invalid_credentials" ? "E-posta veya şifre hatalı." : (data.error || "Giriş başarısız."),
+          false
+        );
+        return;
+      }
+      if (data.requires_2fa) {
+        pending2faToken = data.pending_token;
+        pending2faEmail = data.email;
+        formLogin.hidden = true;
+        form2fa.hidden = false;
+        showMsg(formMsg, "2FA kodu gerekli.", true);
+        return;
+      }
+      saveSession(data.token, data.email);
+      showUser({ email: data.email, token: data.token });
+    });
+
+    form2fa.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!pending2faToken) return;
+      const code = new FormData(form2fa).get("code");
+      const { ok, data } = await apiPost("/login/2fa", {
+        pending_token: pending2faToken,
+        code: String(code || "").replace(/\s/g, ""),
+      });
+      if (!ok) {
+        showMsg(formMsg, data.error === "invalid_2fa" ? "Kod hatalı." : "Doğrulama başarısız.", false);
+        return;
+      }
+      saveSession(data.token, data.email);
+      form2fa.hidden = true;
+      formLogin.hidden = false;
+      showUser({ email: data.email, token: data.token });
+    });
+
+    formRegister.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formMsg.textContent = "";
+      const fd = new FormData(formRegister);
+      const { ok, data } = await apiPost("/register", {
+        email: fd.get("email"),
+        password: fd.get("password"),
+      });
+      if (!ok) {
+        let msg = "Kayıt başarısız.";
+        if (data.error === "email_taken") msg = "Bu e-posta zaten kayıtlı.";
+        if (data.error === "invalid_input") msg = "Geçersiz e-posta veya şifre (min 8 karakter).";
+        showMsg(formMsg, msg, false);
+        return;
+      }
+      let msg = data.message || "Kayıt tamam. E-postandaki linke tıkla.";
+      if (data.verify_url) msg += " (Test: " + data.verify_url + ")";
+      showMsg(formMsg, msg, true);
+    });
+
+    formResend.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = new FormData(formResend).get("email");
+      const { ok, data } = await apiPost("/resend-verification", { email });
+      if (!ok) {
+        showMsg(formMsg, data.error === "not_found" ? "E-posta bulunamadı." : "Gönderilemedi.", false);
+        return;
+      }
+      let msg = data.already_verified ? "Bu hesap zaten doğrulanmış." : "Mail gönderildi (veya API ayarlı değil).";
+      if (data.verify_url) msg += " Test link: " + data.verify_url;
+      showMsg(formMsg, msg, true);
+    });
+
+    document.getElementById("btn-logout").addEventListener("click", () => {
+      clearSession();
+      showGuest();
+    });
+
+    document.getElementById("btn-2fa-start").addEventListener("click", async () => {
+      const session = getSession();
+      if (!session) return;
+      const msgEl = document.getElementById("2fa-msg");
+      const { ok, data } = await apiPost("/2fa/setup", {}, session.token);
+      if (!ok) {
+        showMsg(msgEl, "2FA kurulumu başarısız.", false);
+        return;
+      }
+      document.getElementById("2fa-secret").textContent = data.secret;
+      const link = document.getElementById("2fa-otpauth");
+      link.href = data.otpauth;
+      link.textContent = "Authenticator ile aç";
+      document.getElementById("2fa-setup").hidden = false;
+      document.getElementById("btn-2fa-start").hidden = true;
+      showMsg(msgEl, "Kodu uygulamaya ekle, sonra ilk kodu gir.", true);
+    });
+
+    document.getElementById("form-2fa-enable").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const session = getSession();
+      if (!session) return;
+      const code = new FormData(e.target).get("code");
+      const msgEl = document.getElementById("2fa-msg");
+      const { ok, data } = await apiPost("/2fa/enable", { code: String(code || "").replace(/\s/g, "") }, session.token);
+      if (!ok) {
+        showMsg(msgEl, "Kod hatalı.", false);
+        return;
+      }
+      showMsg(msgEl, "2FA açıldı.", true);
+      refreshAccount(session);
+    });
+
+    document.getElementById("form-2fa-disable").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const session = getSession();
+      if (!session) return;
+      const code = new FormData(e.target).get("code");
+      const msgEl = document.getElementById("2fa-msg");
+      const { ok } = await apiPost("/2fa/disable", { code: String(code || "").replace(/\s/g, "") }, session.token);
+      if (!ok) {
+        showMsg(msgEl, "Kod hatalı.", false);
+        return;
+      }
+      showMsg(msgEl, "2FA kapatıldı.", true);
+      refreshAccount(session);
+    });
+
+    document.getElementById("form-verify").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const verifyMsg = document.getElementById("verify-msg");
+      const key = new FormData(e.target).get("key");
+      const { ok, data } = await apiPost("/verify", { key: key });
+      if (data.valid) {
+        showMsg(verifyMsg, "Lisans geçerli" + (data.plan ? " (" + data.plan + ")" : "") + ".", true);
+      } else {
+        showMsg(verifyMsg, "Geçersiz veya süresi dolmuş key.", false);
+      }
+    });
+  </script>
+</body>
+</html>
