@@ -1,0 +1,12 @@
+{
+  "version": "0.3.8",
+  "linux": {
+    "file": "Wsalauncher-Linux.tar.gz"
+  },
+  "windows": {
+    "file": "Wsalauncher-Windows.zip"
+  },
+  "macos": {
+    "note": "Build on Mac with package-macos.sh; upload Wsalauncher-macOS.tar.gz when ready"
+  }
+}

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wsalauncher
+GenericName=Minecraft Launcher
+Comment=Wsamiaw Recode · Minecraft 26.2
+Exec=/opt/wsalauncher/Wsalauncher
+Path=/opt/wsalauncher
+Icon=wsalauncher
+Terminal=false
+Categories=Game;
+Keywords=wsalauncher;wsamiaw;minecraft;fabric;launcher;
+StartupNotify=true

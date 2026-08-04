@@ -1,0 +1,19 @@
+pkgbase = wsalauncher
+	pkgdesc = Official Wsamiaw Recode launcher for Minecraft 26.2 (Fabric)
+	pkgver = 0.3.8
+	pkgrel = 1
+	url = https://wsamiawclient.lol/download.html
+	install = wsalauncher.install
+	arch = x86_64
+	license = LicenseRef-wsamiaw
+	depends = qt6-base
+	depends = jre25-openjdk
+	depends = curl
+	optdepends = vulkan-driver: Qt6 rendering
+	provides = Wsalauncher
+	source = https://cdn.wsamiawclient.lol/releases/launcher/Wsalauncher-Linux.tar.gz
+	source = wsalauncher.desktop
+	sha256sums = 1aec72a4f4cded2bc000d6afcdaedca68e6f9cfbd4175c5c3fe01a1e84647fa7
+	sha256sums = 19f8c39e878f4da784c2b2fcf09656381d3c4192712c625df00220904da5c605
+
+pkgname = wsalauncher

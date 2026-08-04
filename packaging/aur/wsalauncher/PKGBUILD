@@ -1,0 +1,42 @@
+# Maintainer: Deniz <hello@wsamiawclient.lol>
+pkgname=wsalauncher
+pkgver=0.3.8
+pkgrel=1
+pkgdesc="Official Wsamiaw Recode launcher for Minecraft 26.2 (Fabric)"
+arch=('x86_64')
+url="https://wsamiawclient.lol/download.html"
+license=('LicenseRef-wsamiaw')
+install=wsalauncher.install
+depends=(
+  'qt6-base'
+  'jre25-openjdk'
+  'curl'
+)
+optdepends=(
+  'vulkan-driver: Qt6 rendering'
+)
+provides=('Wsalauncher')
+source=(
+  "https://cdn.wsamiawclient.lol/releases/launcher/Wsalauncher-Linux.tar.gz"
+  "wsalauncher.desktop"
+)
+sha256sums=(
+  '1aec72a4f4cded2bc000d6afcdaedca68e6f9cfbd4175c5c3fe01a1e84647fa7'
+  '19f8c39e878f4da784c2b2fcf09656381d3c4192712c625df00220904da5c605'
+)
+
+package() {
+  install -dm755 "$pkgdir/opt/wsalauncher"
+  cp -a "$srcdir/Wsalauncher-Linux/." "$pkgdir/opt/wsalauncher/"
+
+  install -dm755 "$pkgdir/usr/bin"
+  ln -sf /opt/wsalauncher/Wsalauncher "$pkgdir/usr/bin/wsalauncher"
+  ln -sf wsalauncher "$pkgdir/usr/bin/Wsalauncher"
+
+  install -Dm644 "$srcdir/wsalauncher.desktop" \
+    "$pkgdir/usr/share/applications/wsalauncher.desktop"
+
+  local icon="$pkgdir/opt/wsalauncher/logo.png"
+  [[ -f "$icon" ]] || icon="$pkgdir/opt/wsalauncher/app/logo.png"
+  install -Dm644 "$icon" "$pkgdir/usr/share/icons/hicolor/256x256/apps/wsalauncher.png"
+}
