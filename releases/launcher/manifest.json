@@ -1,13 +1,13 @@
 {
-  "version": "0.4.2",
-  "label": "l4",
+  "version": "0.4.3",
+  "label": "l5",
   "linux": {
     "file": "Wsalauncher-Linux.tar.gz",
-    "sha256": "3aa3dc148243b2df09f520f4c0414d0061121f4875705f06c5d61b23f438b4de"
+    "sha256": "86ab27af2bd75c90382e2bf3ade697a5866e0f0da4b28ef01af8bcafca4da8cc"
   },
   "windows": {
     "file": "Wsalauncher-Windows.zip",
-    "sha256": "26658a37897630f6ab2ea3b04bb7b36fea4be758307dfc6bc4ce2b09047dc15a"
+    "sha256": "c77f5e722df646fd3e0bd910057356f7881acf127545ee51df0feda639dc62a2"
   },
   "macos": {
     "note": "Build on Mac with package-macos.sh; upload Wsalauncher-macOS.tar.gz when ready"

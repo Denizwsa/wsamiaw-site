@@ -1,6 +1,6 @@
 # Maintainer: Deniz <hello@wsamiawclient.lol>
 pkgname=wsalauncher
-pkgver=l4
+pkgver=l5
 pkgrel=1
 pkgdesc="Official Wsamiaw Recode launcher for Minecraft 26.2 (Fabric)"
 arch=('x86_64')
@@ -21,7 +21,7 @@ source=(
   "wsalauncher.desktop"
 )
 sha256sums=(
-  '3aa3dc148243b2df09f520f4c0414d0061121f4875705f06c5d61b23f438b4de'
+  '86ab27af2bd75c90382e2bf3ade697a5866e0f0da4b28ef01af8bcafca4da8cc'
   '19f8c39e878f4da784c2b2fcf09656381d3c4192712c625df00220904da5c605'
 )
 
